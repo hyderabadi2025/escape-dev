@@ -287,10 +287,13 @@
           ? `<img class="video-thumb" src="${v.thumbnail}" alt="" loading="lazy" onerror="this.outerHTML='<div class=video-thumb-fallback>🎬</div>'" />`
           : `<div class="video-thumb-fallback">🎬</div>`;
         return `
-          <a class="video-card" href="${v.link}" target="_blank" rel="noopener noreferrer">
-            ${thumb}
-            <div class="video-title">${v.title}</div>
-          </a>`;
+          <div class="video-card">
+            <button class="video-del" onclick="deleteVideo(${v.id}, this)" title="Remove">✕</button>
+            <a class="video-link" href="${v.link}" target="_blank" rel="noopener noreferrer">
+              ${thumb}
+              <div class="video-title">${v.title}</div>
+            </a>
+          </div>`;
       }).join("");
     }
   
@@ -317,6 +320,40 @@
       if (!title) { error.textContent = "Please enter a video title."; return; }
       if (!link)  { error.textContent = "Please enter a video link."; return; }
       if (!link.startsWith("http")) { error.textContent = "Link must start with https://"; return; }
+
+    async function deleteVideo(id, btn) {
+      if (btn.dataset.confirm !== "true") {
+        btn.dataset.confirm = "true";
+        btn.textContent = "?";
+        btn.style.background = "#e05c7a";
+        setTimeout(() => {
+          if (btn.dataset.confirm === "true") {
+            btn.dataset.confirm = "";
+            btn.textContent = "✕";
+            btn.style.background = "";
+          }
+        }, 3000);
+        return;
+      }
+    
+      btn.dataset.confirm = "";
+      btn.disabled = true;
+      btn.textContent = "…";
+    
+      const res = await fetch(`${BASE}?id=eq.${id}`, {
+        method: "DELETE",
+        headers: { ...HEADERS, "Prefer": "return=minimal" },
+      });
+    
+      if (res.ok) {
+        loadVideos();
+      } else {
+        btn.disabled = false;
+        btn.textContent = "✕";
+        btn.style.background = "";
+        alert("Failed to delete. Check your Supabase RLS policy for DELETE.");
+      }
+    }
   
       error.textContent = "";
       btn.disabled = true;
