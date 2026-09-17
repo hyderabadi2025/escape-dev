@@ -163,8 +163,7 @@
     }
     
     .video-card {
-      display: block;
-      text-decoration: none;
+      position: relative;
       background: #13131c;
       border: 1px solid #22222f;
       border-radius: 12px;
@@ -173,6 +172,33 @@
     }
     
     .video-card:hover { border-color: #3e3e58; }
+    
+    .video-link {
+      display: block;
+      text-decoration: none;
+    }
+    
+    .video-del {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 2;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(10,10,16,0.75);
+      border: 1px solid #2a2a44;
+      border-radius: 50%;
+      color: #eeeaff;
+      font-size: 0.75rem;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    
+    .video-del:hover { background: #e05c7a; color: #fff; }
     
     .video-thumb {
       width: 100%;
