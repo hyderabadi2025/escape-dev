@@ -231,5 +231,94 @@
     <div class="video-grid" id="videoGrid"></div>
 
   </div>
+
+  <script>
+    const SUPABASE_URL  = "https://rdjrwxwuyugmjsuvscsx.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkanJ3eHd1eXVnbWpzdXZzY3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MzAzOTEsImV4cCI6MjA5NjQwNjM5MX0.2xm0WOMaelheQAI1_NGkLdgUTkohiiolwsDxHT1Z-aU";
+  
+    const BASE = `${SUPABASE_URL}/rest/v1/videos`;
+    const HEADERS = {
+      "Content-Type": "application/json",
+      "apikey": SUPABASE_ANON,
+      "Authorization": `Bearer ${SUPABASE_ANON}`,
+    };
+  
+    async function loadVideos() {
+      const res = await fetch(`${BASE}?select=id,title,link,thumbnail&order=created_at.desc`, { headers: HEADERS });
+      const videos = await res.json();
+      renderVideos(videos);
+    }
+  
+    function renderVideos(videos) {
+      const grid = document.getElementById("videoGrid");
+      if (!videos.length) {
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">🎬</div><div class="empty-msg">No videos yet. Add your first one above.</div></div>`;
+        return;
+      }
+  
+      grid.innerHTML = videos.map(v => {
+        const thumb = v.thumbnail
+          ? `<img class="video-thumb" src="${v.thumbnail}" alt="" loading="lazy" onerror="this.outerHTML='<div class=video-thumb-fallback>🎬</div>'" />`
+          : `<div class="video-thumb-fallback">🎬</div>`;
+        return `
+          <a class="video-card" href="${v.link}" target="_blank" rel="noopener noreferrer">
+            ${thumb}
+            <div class="video-title">${v.title}</div>
+          </a>`;
+      }).join("");
+    }
+  
+    // Reuses the same Microlink approach your Stories page uses for auto-fill,
+    // but here we only need the og:image for the thumbnail.
+    async function fetchThumbnail(link) {
+      try {
+        const res  = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(link)}`);
+        const data = await res.json();
+        if (data.status === "success" && data.data.image && data.data.image.url) {
+          return data.data.image.url;
+        }
+      } catch {}
+      return null;
+    }
+  
+    async function addVideo() {
+      const title  = document.getElementById("vTitle").value.trim();
+      const link   = document.getElementById("vLink").value.trim();
+      const error  = document.getElementById("vError");
+      const status = document.getElementById("vFetchStatus");
+      const btn    = document.getElementById("vAddBtn");
+  
+      if (!title) { error.textContent = "Please enter a video title."; return; }
+      if (!link)  { error.textContent = "Please enter a video link."; return; }
+      if (!link.startsWith("http")) { error.textContent = "Link must start with https://"; return; }
+  
+      error.textContent = "";
+      btn.disabled = true;
+      btn.textContent = "Saving…";
+      status.textContent = "Fetching thumbnail…";
+  
+      const thumbnail = await fetchThumbnail(link);
+      status.textContent = thumbnail ? "" : "Couldn't fetch a thumbnail — saved without one.";
+  
+      const res = await fetch(BASE, {
+        method: "POST",
+        headers: { ...HEADERS, "Prefer": "return=representation" },
+        body: JSON.stringify({ title, link, thumbnail }),
+      });
+  
+      btn.disabled = false;
+      btn.textContent = "+ Add Video";
+  
+      if (res.ok) {
+        document.getElementById("vTitle").value = "";
+        document.getElementById("vLink").value  = "";
+        loadVideos();
+      } else {
+        error.textContent = "Failed to save. Check your Supabase config.";
+      }
+    }
+  
+    loadVideos();
+  </script>
 </body>
 </html>
