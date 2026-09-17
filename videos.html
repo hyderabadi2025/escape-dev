@@ -216,10 +216,19 @@
       <p class="subtitle">Coming soon</p>
     </div>
 
-    <div class="empty">
-      <div class="empty-icon">🎬</div>
-      <div class="empty-msg">This page is set up and ready to go —<br>the video player and Supabase Storage hookup land next.</div>
+    <div class="card">
+      <label for="vTitle">Video Title</label>
+      <input type="text" id="vTitle" placeholder="e.g. How black holes form" />
+    
+      <label for="vLink">Video Link</label>
+      <input type="url" id="vLink" placeholder="https://..." />
+      <p class="fetch-status" id="vFetchStatus"></p>
+    
+      <button class="add-btn" id="vAddBtn" onclick="addVideo()">+ Add Video</button>
+      <p class="error" id="vError"></p>
     </div>
+    
+    <div class="video-grid" id="videoGrid"></div>
 
   </div>
 </body>
