@@ -322,21 +322,10 @@
       if (!link.startsWith("http")) { error.textContent = "Link must start with https://"; return; }
 
     async function deleteVideo(id, btn) {
-      if (btn.dataset.confirm !== "true") {
-        btn.dataset.confirm = "true";
-        btn.textContent = "?";
-        btn.style.background = "#e05c7a";
-        setTimeout(() => {
-          if (btn.dataset.confirm === "true") {
-            btn.dataset.confirm = "";
-            btn.textContent = "✕";
-            btn.style.background = "";
-          }
-        }, 3000);
+      if (!confirm("Remove this video?")) {
         return;
       }
     
-      btn.dataset.confirm = "";
       btn.disabled = true;
       btn.textContent = "…";
     
@@ -350,7 +339,6 @@
       } else {
         btn.disabled = false;
         btn.textContent = "✕";
-        btn.style.background = "";
         alert("Failed to delete. Check your Supabase RLS policy for DELETE.");
       }
     }
